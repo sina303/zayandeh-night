@@ -1,0 +1,176 @@
+/* =========================================
+🌵 ZAYANDEH NIGHT — Day 1: Setup
+========================================= */
+import * as THREE from 'three';
+
+const canvas = document.getElementById('gameCanvas');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05050a);
+scene.fog = new THREE.Fog(0x05050a, 5, 50);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 1.7, 0);
+
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.6;
+
+/* LIGHTS */
+const ambient = new THREE.AmbientLight(0x404060, 0.3);
+scene.add(ambient);
+
+const moonLight = new THREE.DirectionalLight(0x8899ff, 0.2);
+moonLight.position.set(-10, 20, -5);
+moonLight.castShadow = true;
+moonLight.shadow.mapSize.width = 1024;
+moonLight.shadow.mapSize.height = 1024;
+scene.add(moonLight);
+
+/* GROUND */
+const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
+const groundMaterial = new THREE.MeshStandardMaterial({
+  color: 0x3a3020,
+  roughness: 1,
+  metalness: 0
+});
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const positions = groundGeometry.attributes.position;
+for (let i = 0; i < positions.count; i++) {
+  const x = positions.getX(i);
+  const y = positions.getY(i);
+  if (x !== 0 || y !== 0) {
+    positions.setZ(i, Math.random() * 0.2);
+  }
+}
+positions.needsUpdate = true;
+groundGeometry.computeVertexNormals();
+
+/* TEST BOX */
+const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+const boxMaterial = new THREE.MeshStandardMaterial({
+  color: 0x888888,
+  roughness: 0.8
+});
+const box = new THREE.Mesh(boxGeometry, boxMaterial);
+box.position.set(3, 0.5, -5);
+box.castShadow = true;
+scene.add(box);
+
+/* STARS */
+function createStars() {
+  const starsGeometry = new THREE.BufferGeometry();
+  const starsCount = 2000;
+  const positions = new Float32Array(starsCount * 3);
+
+  for (let i = 0; i < starsCount * 3; i += 3) {
+    positions[i] = (Math.random() - 0.5) * 500;
+    positions[i + 1] = Math.random() * 100 + 20;
+    positions[i + 2] = (Math.random() - 0.5) * 500;
+  }
+
+  starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const starsMaterial = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.5,
+    transparent: true,
+    opacity: 0.8
+  });
+
+  const stars = new THREE.Points(starsGeometry, starsMaterial);
+  scene.add(stars);
+}
+createStars();
+
+/* INPUT */
+const keys = {};
+
+document.addEventListener('keydown', (e) => {
+  keys[e.key.toLowerCase()] = true;
+});
+
+document.addEventListener('keyup', (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+let mouseX = 0;
+let mouseY = 0;
+let isLocked = false;
+
+canvas.addEventListener('click', () => {
+  canvas.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === canvas;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isLocked) return;
+  mouseX -= e.movementX * 0.002;
+  mouseY -= e.movementY * 0.002;
+  mouseY = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, mouseY));
+});
+
+/* ANIMATION */
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+
+  const speed = keys['shift'] ? 8 : 3;
+  const forward = new THREE.Vector3(-Math.sin(mouseX), 0, -Math.cos(mouseX));
+  const right = new THREE.Vector3(Math.cos(mouseX), 0, -Math.sin(mouseX));
+
+  if (keys['w'] || keys['arrowup']) {
+    camera.position.addScaledVector(forward, speed * delta);
+  }
+  if (keys['s'] || keys['arrowdown']) {
+    camera.position.addScaledVector(forward, -speed * delta);
+  }
+  if (keys['a'] || keys['arrowleft']) {
+    camera.position.addScaledVector(right, -speed * delta);
+  }
+  if (keys['d'] || keys['arrowright']) {
+    camera.position.addScaledVector(right, speed * delta);
+  }
+
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = mouseX;
+  camera.rotation.x = mouseY;
+
+  renderer.render(scene, camera);
+}
+
+/* RESIZE */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* START */
+window.startGame = function() {
+  document.getElementById('startScreen').classList.add('hidden');
+  animate();
+};
+
+console.log('🌵 Zayandeh Night — Day 1 loaded');

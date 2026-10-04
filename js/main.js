@@ -1,12 +1,13 @@
 /* =========================================
-🌵 ZAYANDEH NIGHT — Day 1: Setup
+🌵 ZAYANDEH NIGHT — Day 2: House
 ========================================= */
 import * as THREE from 'three';
+import { createHouse } from './house.js';
 
 const canvas = document.getElementById('gameCanvas');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x05050a);
-scene.fog = new THREE.Fog(0x05050a, 5, 50);
+scene.fog = new THREE.Fog(0x05050a, 5, 60);
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -14,7 +15,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 1.7, 0);
+camera.position.set(0, 1.7, 15);
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -25,23 +26,27 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.6;
+renderer.toneMappingExposure = 0.7;
 
 /* LIGHTS */
-const ambient = new THREE.AmbientLight(0x404060, 0.3);
+const ambient = new THREE.AmbientLight(0x404060, 0.4);
 scene.add(ambient);
 
-const moonLight = new THREE.DirectionalLight(0x8899ff, 0.2);
-moonLight.position.set(-10, 20, -5);
+const moonLight = new THREE.DirectionalLight(0x8899ff, 0.4);
+moonLight.position.set(-10, 20, 5);
 moonLight.castShadow = true;
-moonLight.shadow.mapSize.width = 1024;
-moonLight.shadow.mapSize.height = 1024;
+moonLight.shadow.mapSize.width = 2048;
+moonLight.shadow.mapSize.height = 2048;
+moonLight.shadow.camera.left = -30;
+moonLight.shadow.camera.right = 30;
+moonLight.shadow.camera.top = 30;
+moonLight.shadow.camera.bottom = -30;
 scene.add(moonLight);
 
-/* GROUND */
+/* GROUND — Desert */
 const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
 const groundMaterial = new THREE.MeshStandardMaterial({
-  color: 0x3a3020,
+  color: 0x2a2015,
   roughness: 1,
   metalness: 0
 });
@@ -49,28 +54,6 @@ const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
-
-const positions = groundGeometry.attributes.position;
-for (let i = 0; i < positions.count; i++) {
-  const x = positions.getX(i);
-  const y = positions.getY(i);
-  if (x !== 0 || y !== 0) {
-    positions.setZ(i, Math.random() * 0.2);
-  }
-}
-positions.needsUpdate = true;
-groundGeometry.computeVertexNormals();
-
-/* TEST BOX */
-const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-const boxMaterial = new THREE.MeshStandardMaterial({
-  color: 0x888888,
-  roughness: 0.8
-});
-const box = new THREE.Mesh(boxGeometry, boxMaterial);
-box.position.set(3, 0.5, -5);
-box.castShadow = true;
-scene.add(box);
 
 /* STARS */
 function createStars() {
@@ -97,6 +80,9 @@ function createStars() {
   scene.add(stars);
 }
 createStars();
+
+/* HOUSE */
+createHouse(scene);
 
 /* INPUT */
 const keys = {};
@@ -173,4 +159,4 @@ window.startGame = function() {
   animate();
 };
 
-console.log('🌵 Zayandeh Night — Day 1 loaded');
+console.log('🌵 Zayandeh Night — Day 2 loaded');

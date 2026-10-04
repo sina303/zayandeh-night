@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zayandeh Night</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="hud">
+      <div class="crosshair"></div>
+      <div class="battery">
+        <span class="battery-label">BATTERY</span>
+        <div class="battery-bar">
+          <div class="battery-fill" id="batteryFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-box hidden" id="dialogBox">
+      <div class="dialog-speaker" id="dialogSpeaker">NPC</div>
+      <div class="dialog-text" id="dialogText">...</div>
+      <div class="dialog-hint">[Space] Continue</div>
+    </div>
+
+    <div class="start-screen" id="startScreen">
+      <h1>🌵 Zayandeh Night</h1>
+      <p>A psychological horror game</p>
+      <button class="start-btn" onclick="startGame()">Start</button>
+      <div class="controls-info">
+        <div><strong>WASD</strong> — Move</div>
+        <div><strong>Mouse</strong> — Look</div>
+        <div><strong>F</strong> — Flashlight</div>
+        <div><strong>Shift</strong> — Run</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

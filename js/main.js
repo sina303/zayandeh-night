@@ -1,5 +1,5 @@
 /* =========================================
-🌵 ZAYANDEH NIGHT — Day 3: Flashlight + Audio
+🌵 ZAYANDEH NIGHT — Day 3: Flashlight + Audio + Fixed
 ========================================= */
 import * as THREE from 'three';
 import { createHouse } from './house.js';
@@ -30,45 +30,31 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 
-/* =========================================
-LIGHTS
-========================================= */
-const ambient = new THREE.AmbientLight(0x223344, 0.4);
+/* LIGHTS */
+const ambient = new THREE.AmbientLight(0x223344, 0.5);
 scene.add(ambient);
 
-const moonLight = new THREE.DirectionalLight(0x8899bb, 0.5);
+const moonLight = new THREE.DirectionalLight(0x8899bb, 0.6);
 moonLight.position.set(-10, 20, 5);
 moonLight.castShadow = true;
-moonLight.shadow.mapSize.width = 2048;
-moonLight.shadow.mapSize.height = 2048;
 scene.add(moonLight);
 
-/* =========================================
-FLASHLIGHT 🔦
-========================================= */
-const flashlight = new THREE.SpotLight(0xffdd99, 3, 25, Math.PI / 7, 0.5, 1.5);
+/* FLASHLIGHT */
+const flashlight = new THREE.SpotLight(0xffdd99, 4, 30, Math.PI / 5, 0.6, 1.5);
 flashlight.castShadow = true;
 flashlight.shadow.mapSize.width = 1024;
 flashlight.shadow.mapSize.height = 1024;
-flashlight.shadow.camera.near = 0.5;
-flashlight.shadow.camera.far = 25;
 scene.add(flashlight);
 
-/* هدف چراغ‌قوه (جلو دوربین) */
 const flashlightTarget = new THREE.Object3D();
 scene.add(flashlightTarget);
 flashlight.target = flashlightTarget;
 
-/* =========================================
-FLASHLIGHT STATE
-========================================= */
 let flashlightOn = true;
 let battery = 100;
-const batteryDrainRate = 3; /* % per second */
+const batteryDrainRate = 2;
 
-/* =========================================
-GROUND
-========================================= */
+/* GROUND */
 const groundGeometry = new THREE.PlaneGeometry(200, 200);
 const groundMaterial = new THREE.MeshStandardMaterial({
   color: 0x6a5a40,
@@ -80,29 +66,23 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-/* =========================================
-STARS
-========================================= */
+/* STARS */
 function createStars() {
   const starsGeometry = new THREE.BufferGeometry();
   const starsCount = 1500;
   const positions = new Float32Array(starsCount * 3);
-
   for (let i = 0; i < starsCount * 3; i += 3) {
     positions[i] = (Math.random() - 0.5) * 500;
     positions[i + 1] = Math.random() * 100 + 30;
     positions[i + 2] = (Math.random() - 0.5) * 500;
   }
-
   starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
   const starsMaterial = new THREE.PointsMaterial({
     color: 0xffffff,
     size: 0.7,
     transparent: true,
     opacity: 0.9
   });
-
   const stars = new THREE.Points(starsGeometry, starsMaterial);
   scene.add(stars);
 }
@@ -120,7 +100,6 @@ document.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
   keys[key] = true;
 
-  /* چراغ‌قوه */
   if (key === "f") {
     if (battery > 0) {
       flashlightOn = !flashlightOn;
@@ -138,12 +117,16 @@ let mouseX = 0;
 let mouseY = 0;
 let isLocked = false;
 
-canvas.addEventListener('click', () => {
-  canvas.requestPointerLock();
+/* کلیک روی هر جایی از صفحه → فعال‌سازی pointer lock */
+document.addEventListener('click', () => {
+  if (!isLocked) {
+    canvas.requestPointerLock();
+  }
 });
 
 document.addEventListener('pointerlockchange', () => {
   isLocked = document.pointerLockElement === canvas;
+  console.log("🔒 Pointer lock:", isLocked ? "ON" : "OFF");
 });
 
 document.addEventListener('mousemove', (e) => {
@@ -166,7 +149,6 @@ function animate() {
   const isRunning = !!keys['shift'];
   const speed = isRunning ? 6 : 2.8;
 
-  /* حرکت */
   const forward = new THREE.Vector3(-Math.sin(mouseX), 0, -Math.cos(mouseX));
   const right = new THREE.Vector3(Math.cos(mouseX), 0, -Math.sin(mouseX));
 
@@ -189,15 +171,13 @@ function animate() {
     moved = true;
   }
 
-  /* چرخش دوربین */
   camera.rotation.order = 'YXZ';
   camera.rotation.y = mouseX;
   camera.rotation.x = mouseY;
 
-  /* چراغ‌قوه — جلوی دوربین */
+  /* چراغ‌قوه */
   flashlight.position.copy(camera.position);
   flashlight.position.y -= 0.2;
-
   const targetPos = camera.position.clone().add(forward.clone().multiplyScalar(10));
   targetPos.y = camera.position.y - 0.3;
   flashlightTarget.position.copy(targetPos);
@@ -209,7 +189,6 @@ function animate() {
       battery = 0;
       flashlightOn = false;
       flashlight.visible = false;
-      console.log("🔋 Battery empty!");
     }
     updateBatteryHUD();
   }
@@ -220,37 +199,39 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-/* =========================================
-HUD BATTERY
-========================================= */
 function updateBatteryHUD() {
   const fill = document.getElementById('batteryFill');
-  if (fill) {
-    fill.style.width = battery + '%';
-  }
+  if (fill) fill.style.width = battery + '%';
 }
 
-/* =========================================
-RESIZE
-========================================= */
+/* RESIZE */
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* =========================================
-START
-========================================= */
+/* START */
 window.startGame = function() {
   document.getElementById('startScreen').classList.add('hidden');
 
-  /* راه‌اندازی صدا */
   initAudio();
   startAmbientWind();
 
-  /* شروع حلقه */
+  /* فعال‌سازی pointer lock بعد از یه تأخیر کوچیک */
+  setTimeout(() => {
+    canvas.requestPointerLock();
+  }, 100);
+
   animate();
+};
+
+/* EXPOSE FOR DEBUG */
+window.gameDebug = {
+  camera,
+  scene,
+  keys,
+  getMouse: () => ({ mouseX, mouseY, isLocked })
 };
 
 console.log('🌵 Zayandeh Night — Day 3 loaded');

@@ -1,5 +1,5 @@
 /* =========================================
-🌵 ZAYANDEH NIGHT — Day 2: House (Bright + Close)
+🌵 ZAYANDEH NIGHT — Day 2: House Fixed
 ========================================= */
 import * as THREE from 'three';
 import { createHouse } from './house.js';
@@ -7,7 +7,7 @@ import { createHouse } from './house.js';
 const canvas = document.getElementById('gameCanvas');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a15);
-scene.fog = new THREE.Fog(0x0a0a15, 20, 80);
+scene.fog = new THREE.Fog(0x0a0a15, 25, 90);
 
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -16,9 +16,9 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-/* دوربین رو ببر وسط حیاط */
-camera.position.set(0, 1.7, 3);
-camera.lookAt(0, 1.5, 0);
+/* دوربین کنار حوض، رو به اتاق شمالی */
+camera.position.set(4, 1.7, 4);
+camera.lookAt(0, 1.5, -7);
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -29,15 +29,13 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 2.0;
+renderer.toneMappingExposure = 1.6;
 
-/* =========================================
-LIGHTS — خیلی روشن
-========================================= */
-const ambient = new THREE.AmbientLight(0xffffff, 2.5);
+/* LIGHTS */
+const ambient = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambient);
 
-const moonLight = new THREE.DirectionalLight(0xaabbdd, 1.5);
+const moonLight = new THREE.DirectionalLight(0xaabbdd, 1.2);
 moonLight.position.set(-10, 20, 5);
 moonLight.castShadow = true;
 moonLight.shadow.mapSize.width = 2048;
@@ -48,14 +46,11 @@ moonLight.shadow.camera.top = 30;
 moonLight.shadow.camera.bottom = -30;
 scene.add(moonLight);
 
-/* نور اضافی از پایین */
-const fillLight = new THREE.DirectionalLight(0x8899bb, 0.8);
+const fillLight = new THREE.DirectionalLight(0x8899bb, 0.6);
 fillLight.position.set(0, -10, 0);
 scene.add(fillLight);
 
-/* =========================================
-GROUND
-========================================= */
+/* GROUND */
 const groundGeometry = new THREE.PlaneGeometry(200, 200);
 const groundMaterial = new THREE.MeshStandardMaterial({
   color: 0x6a5a40,
@@ -67,9 +62,7 @@ ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-/* =========================================
-STARS
-========================================= */
+/* STARS */
 function createStars() {
   const starsGeometry = new THREE.BufferGeometry();
   const starsCount = 1500;
@@ -95,20 +88,10 @@ function createStars() {
 }
 createStars();
 
-/* =========================================
-HOUSE
-========================================= */
-try {
-  const house = createHouse(scene);
-  console.log("✅ House created");
-  console.log("Total scene children:", scene.children.length);
-} catch (e) {
-  console.error("❌ House error:", e);
-}
+/* HOUSE */
+createHouse(scene);
 
-/* =========================================
-INPUT
-========================================= */
+/* INPUT */
 const keys = {};
 
 document.addEventListener('keydown', (e) => {
@@ -138,9 +121,7 @@ document.addEventListener('mousemove', (e) => {
   mouseY = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, mouseY));
 });
 
-/* =========================================
-ANIMATION
-========================================= */
+/* ANIMATION */
 const clock = new THREE.Clock();
 
 function animate() {
@@ -171,18 +152,14 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-/* =========================================
-RESIZE
-========================================= */
+/* RESIZE */
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-/* =========================================
-START
-========================================= */
+/* START */
 window.startGame = function() {
   document.getElementById('startScreen').classList.add('hidden');
   animate();

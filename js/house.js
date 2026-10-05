@@ -1,98 +1,88 @@
 /* =========================================
-🏠 HOUSE — Traditional Isfahani House
+🏠 HOUSE — Simple Traditional House
 ========================================= */
 import * as THREE from 'three';
 
 /* =========================================
 MATERIALS
 ========================================= */
-export const materials = {
-  /* کاهگل — دیوارهای بیرونی */
-  kahgel: new THREE.MeshStandardMaterial({
-    color: 0x8b7355,
-    roughness: 0.95,
-    metalness: 0
-  }),
+const kahgelMat = new THREE.MeshStandardMaterial({
+  color: 0xb89d78,
+  roughness: 0.9,
+  metalness: 0
+});
 
-  /* آجر — دیوارهای داخلی */
-  brick: new THREE.MeshStandardMaterial({
-    color: 0x6b4a3a,
-    roughness: 0.9,
-    metalness: 0
-  }),
+const brickMat = new THREE.MeshStandardMaterial({
+  color: 0x9a6b4a,
+  roughness: 0.9,
+  metalness: 0
+});
 
-  /* چوب — درها و پنجره‌ها */
-  wood: new THREE.MeshStandardMaterial({
-    color: 0x4a2f1a,
-    roughness: 0.8,
-    metalness: 0
-  }),
+const woodMat = new THREE.MeshStandardMaterial({
+  color: 0x5a3a20,
+  roughness: 0.8,
+  metalness: 0
+});
 
-  /* کاشی — حوض */
-  tile: new THREE.MeshStandardMaterial({
-    color: 0x1e5a7a,
-    roughness: 0.3,
-    metalness: 0.1
-  }),
+const tileMat = new THREE.MeshStandardMaterial({
+  color: 0x2a7a9a,
+  roughness: 0.4,
+  metalness: 0.1
+});
 
-  /* آب */
-  water: new THREE.MeshStandardMaterial({
-    color: 0x2a4a6a,
-    roughness: 0.1,
-    metalness: 0.3,
-    transparent: true,
-    opacity: 0.85
-  }),
+const waterMat = new THREE.MeshStandardMaterial({
+  color: 0x3a6a9a,
+  roughness: 0.2,
+  metalness: 0.3,
+  transparent: true,
+  opacity: 0.85
+});
 
-  /* شیشه */
-  glass: new THREE.MeshStandardMaterial({
-    color: 0x223344,
-    roughness: 0.1,
-    metalness: 0.2,
-    transparent: true,
-    opacity: 0.6
-  }),
+const glassMat = new THREE.MeshStandardMaterial({
+  color: 0x334455,
+  roughness: 0.2,
+  metalness: 0.3,
+  transparent: true,
+  opacity: 0.5
+});
 
-  /* فرش */
-  carpet: new THREE.MeshStandardMaterial({
-    color: 0x7a1e1e,
-    roughness: 1,
-    metalness: 0
-  })
-};
+const carpetMat = new THREE.MeshStandardMaterial({
+  color: 0x8a2a2a,
+  roughness: 1,
+  metalness: 0
+});
 
 /* =========================================
-WALL BUILDER
+HELPER: CREATE WALL
 ========================================= */
-function createWall(width, height, depth, material, position) {
-  const geometry = new THREE.BoxGeometry(width, height, depth);
-  const wall = new THREE.Mesh(geometry, material);
-  wall.position.set(position.x, position.y + height / 2, position.z);
-  wall.castShadow = true;
-  wall.receiveShadow = true;
-  return wall;
+function makeWall(width, height, depth, material, x, y, z) {
+  const geo = new THREE.BoxGeometry(width, height, depth);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.position.set(x, y + height / 2, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 /* =========================================
 CREATE HOUSE
 ========================================= */
 export function createHouse(scene) {
+  console.log("🏠 Building house...");
+
   const house = new THREE.Group();
 
-  /* ابعاد حیاط */
-  const yardSize = 12;
-  const wallHeight = 4;
-  const wallThickness = 0.4;
+  const YARD = 14;
+  const WALL_H = 4;
+  const WALL_T = 0.3;
+  const HALF = YARD / 2;
 
   /* =========================================
-  حیاط — کف
+  کف حیاط
   ========================================= */
   const yardFloor = new THREE.Mesh(
-    new THREE.PlaneGeometry(yardSize, yardSize),
-    new THREE.MeshStandardMaterial({
-      color: 0x5a4a35,
-      roughness: 1
-    })
+    new THREE.PlaneGeometry(YARD, YARD),
+    new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 1 })
   );
   yardFloor.rotation.x = -Math.PI / 2;
   yardFloor.receiveShadow = true;
@@ -101,189 +91,156 @@ export function createHouse(scene) {
   /* =========================================
   حوض وسط حیاط
   ========================================= */
-  const poolSize = 3;
-  const poolDepth = 0.5;
+  const poolGeo = new THREE.BoxGeometry(3, 0.5, 3);
+  const pool = new THREE.Mesh(poolGeo, tileMat);
+  pool.position.y = 0.25;
+  pool.castShadow = true;
+  pool.receiveShadow = true;
+  house.add(pool);
 
-  /* لبه حوض */
-  const poolRimGeo = new THREE.BoxGeometry(poolSize, poolDepth, poolSize);
-  const poolRim = new THREE.Mesh(poolRimGeo, materials.tile);
-  poolRim.position.y = poolDepth / 2;
-  poolRim.castShadow = true;
-  poolRim.receiveShadow = true;
-  house.add(poolRim);
-
-  /* آب حوض */
-  const waterGeo = new THREE.PlaneGeometry(poolSize * 0.9, poolSize * 0.9);
-  const water = new THREE.Mesh(waterGeo, materials.water);
+  const waterGeo = new THREE.PlaneGeometry(2.7, 2.7);
+  const water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI / 2;
-  water.position.y = poolDepth * 0.9;
+  water.position.y = 0.45;
   house.add(water);
 
   /* =========================================
   دیوارهای چهار طرف حیاط
   ========================================= */
-  const half = yardSize / 2;
-
-  /* دیوار شمالی */
-  house.add(createWall(
-    yardSize, wallHeight, wallThickness,
-    materials.kahgel,
-    { x: 0, y: 0, z: -half }
-  ));
-
-  /* دیوار جنوبی */
-  house.add(createWall(
-    yardSize, wallHeight, wallThickness,
-    materials.kahgel,
-    { x: 0, y: 0, z: half }
-  ));
-
-  /* دیوار شرقی */
-  house.add(createWall(
-    wallThickness, wallHeight, yardSize,
-    materials.kahgel,
-    { x: half, y: 0, z: 0 }
-  ));
-
-  /* دیوار غربی */
-  house.add(createWall(
-    wallThickness, wallHeight, yardSize,
-    materials.kahgel,
-    { x: -half, y: 0, z: 0 }
-  ));
+  /* شمالی */
+  house.add(makeWall(YARD, WALL_H, WALL_T, kahgelMat, 0, 0, -HALF));
+  /* جنوبی */
+  house.add(makeWall(YARD, WALL_H, WALL_T, kahgelMat, 0, 0, HALF));
+  /* شرقی */
+  house.add(makeWall(WALL_T, WALL_H, YARD, kahgelMat, HALF, 0, 0));
+  /* غربی */
+  house.add(makeWall(WALL_T, WALL_H, YARD, kahgelMat, -HALF, 0, 0));
 
   /* =========================================
   اتاق شمالی (اتاق اصلی)
   ========================================= */
-  const roomW = 6;
-  const roomD = 4;
-  const roomH = 3;
+  const NW = 7;
+  const ND = 5;
+  const NH = 3.5;
 
-  /* کف اتاق */
-  const roomFloor = new THREE.Mesh(
-    new THREE.PlaneGeometry(roomW, roomD),
-    materials.carpet
+  /* کف */
+  const northFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(NW, ND),
+    carpetMat
   );
-  roomFloor.rotation.x = -Math.PI / 2;
-  roomFloor.position.set(0, 0.01, -half - roomD / 2);
-  roomFloor.receiveShadow = true;
-  house.add(roomFloor);
+  northFloor.rotation.x = -Math.PI / 2;
+  northFloor.position.set(0, 0.02, -HALF - ND / 2);
+  northFloor.receiveShadow = true;
+  house.add(northFloor);
 
   /* دیوار پشت */
-  house.add(createWall(
-    roomW, roomH, wallThickness,
-    materials.brick,
-    { x: 0, y: 0, z: -half - roomD }
-  ));
-
+  house.add(makeWall(NW, NH, WALL_T, brickMat, 0, 0, -HALF - ND));
   /* دیوار چپ */
-  house.add(createWall(
-    wallThickness, roomH, roomD,
-    materials.brick,
-    { x: -roomW / 2, y: 0, z: -half - roomD / 2 }
-  ));
-
+  house.add(makeWall(WALL_T, NH, ND, brickMat, -NW / 2, 0, -HALF - ND / 2));
   /* دیوار راست */
-  house.add(createWall(
-    wallThickness, roomH, roomD,
-    materials.brick,
-    { x: roomW / 2, y: 0, z: -half - roomD / 2 }
-  ));
+  house.add(makeWall(WALL_T, NH, ND, brickMat, NW / 2, 0, -HALF - ND / 2));
 
-  /* سقف اتاق شمالی */
-  const ceilingN = new THREE.Mesh(
-    new THREE.BoxGeometry(roomW, 0.2, roomD),
-    materials.brick
+  /* سقف */
+  const northCeiling = new THREE.Mesh(
+    new THREE.BoxGeometry(NW, 0.2, ND),
+    brickMat
   );
-  ceilingN.position.set(0, roomH, -half - roomD / 2);
-  ceilingN.castShadow = true;
-  ceilingN.receiveShadow = true;
-  house.add(ceilingN);
+  northCeiling.position.set(0, NH, -HALF - ND / 2);
+  northCeiling.castShadow = true;
+  northCeiling.receiveShadow = true;
+  house.add(northCeiling);
 
-  /* =========================================
-  در ورودی اتاق شمالی
-  ========================================= */
-  const doorW = 1.2;
-  const doorH = 2.2;
-
-  /* چارچوب در */
-  house.add(createWall(
-    doorW + 0.3, doorH + 0.3, wallThickness + 0.1,
-    materials.wood,
-    { x: -1.5, y: 0, z: -half }
-  ));
+  /* در ورودی اتاق شمالی — توی دیوار جنوبی‌اش */
+  const doorFrame = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 2.5, WALL_T + 0.1),
+    woodMat
+  );
+  doorFrame.position.set(0, 1.25, -HALF);
+  doorFrame.castShadow = true;
+  house.add(doorFrame);
 
   /* =========================================
   اتاق شرقی
   ========================================= */
-  const roomEW = 4;
-  const roomED = 5;
+  const EW = 5;
+  const ED = 6;
+  const EH = 3.5;
 
-  const roomEastFloor = new THREE.Mesh(
-    new THREE.PlaneGeometry(roomEW, roomED),
-    materials.carpet
+  const eastFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(EW, ED),
+    carpetMat
   );
-  roomEastFloor.rotation.x = -Math.PI / 2;
-  roomEastFloor.position.set(half + roomEW / 2, 0.01, 0);
-  roomEastFloor.receiveShadow = true;
-  house.add(roomEastFloor);
+  eastFloor.rotation.x = -Math.PI / 2;
+  eastFloor.position.set(HALF + EW / 2, 0.02, 0);
+  eastFloor.receiveShadow = true;
+  house.add(eastFloor);
 
   /* دیوارها */
-  house.add(createWall(
-    roomEW, roomH, wallThickness,
-    materials.brick,
-    { x: half + roomEW / 2, y: 0, z: -roomED / 2 }
-  ));
-
-  house.add(createWall(
-    roomEW, roomH, wallThickness,
-    materials.brick,
-    { x: half + roomEW / 2, y: 0, z: roomED / 2 }
-  ));
-
-  house.add(createWall(
-    wallThickness, roomH, roomED,
-    materials.brick,
-    { x: half + roomEW, y: 0, z: 0 }
-  ));
+  house.add(makeWall(EW, EH, WALL_T, brickMat, HALF + EW / 2, 0, -ED / 2));
+  house.add(makeWall(EW, EH, WALL_T, brickMat, HALF + EW / 2, 0, ED / 2));
+  house.add(makeWall(WALL_T, EH, ED, brickMat, HALF + EW, 0, 0));
 
   /* سقف */
-  const ceilingE = new THREE.Mesh(
-    new THREE.BoxGeometry(roomEW, 0.2, roomED),
-    materials.brick
+  const eastCeiling = new THREE.Mesh(
+    new THREE.BoxGeometry(EW, 0.2, ED),
+    brickMat
   );
-  ceilingE.position.set(half + roomEW / 2, roomH, 0);
-  ceilingE.castShadow = true;
-  ceilingE.receiveShadow = true;
-  house.add(ceilingE);
+  eastCeiling.position.set(HALF + EW / 2, EH, 0);
+  eastCeiling.castShadow = true;
+  eastCeiling.receiveShadow = true;
+  house.add(eastCeiling);
+
+  /* =========================================
+  اتاق غربی
+  ========================================= */
+  const WW = 5;
+  const WD = 6;
+  const WH = 3.5;
+
+  const westFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(WW, WD),
+    carpetMat
+  );
+  westFloor.rotation.x = -Math.PI / 2;
+  westFloor.position.set(-HALF - WW / 2, 0.02, 0);
+  westFloor.receiveShadow = true;
+  house.add(westFloor);
+
+  house.add(makeWall(WW, WH, WALL_T, brickMat, -HALF - WW / 2, 0, -WD / 2));
+  house.add(makeWall(WW, WH, WALL_T, brickMat, -HALF - WW / 2, 0, WD / 2));
+  house.add(makeWall(WALL_T, WH, WD, brickMat, -HALF - WW, 0, 0));
+
+  const westCeiling = new THREE.Mesh(
+    new THREE.BoxGeometry(WW, 0.2, WD),
+    brickMat
+  );
+  westCeiling.position.set(-HALF - WW / 2, WH, 0);
+  westCeiling.castShadow = true;
+  westCeiling.receiveShadow = true;
+  house.add(westCeiling);
 
   /* =========================================
   پنجره‌های حیاط
   ========================================= */
-  const windowW = 0.8;
-  const windowH = 1.2;
+  const winGeo1 = new THREE.BoxGeometry(1.2, 1.5, 0.15);
+  const win1 = new THREE.Mesh(winGeo1, glassMat);
+  win1.position.set(2.5, 1.8, -HALF + 0.05);
+  house.add(win1);
 
-  /* پنجره‌ی شمالی */
-  const winN = new THREE.Mesh(
-    new THREE.BoxGeometry(windowW, windowH, 0.1),
-    materials.glass
-  );
-  winN.position.set(1.5, 1.5, -half + 0.01);
-  house.add(winN);
+  const winGeo2 = new THREE.BoxGeometry(0.15, 1.5, 1.2);
+  const win2 = new THREE.Mesh(winGeo2, glassMat);
+  win2.position.set(HALF - 0.05, 1.8, 2.5);
+  house.add(win2);
 
-  /* پنجره‌ی شرقی */
-  const winE = new THREE.Mesh(
-    new THREE.BoxGeometry(0.1, windowH, windowW),
-    materials.glass
-  );
-  winE.position.set(half - 0.01, 1.5, 1.5);
-  house.add(winE);
+  const win3 = new THREE.Mesh(winGeo2, glassMat);
+  win3.position.set(-HALF + 0.05, 1.8, -2.5);
+  house.add(win3);
 
   /* =========================================
-  موقعیت خونه توی دنیا
+  اضافه کردن به صحنه
   ========================================= */
-  house.position.set(0, 0, 0);
-
   scene.add(house);
+  console.log("✅ House added. Total children:", house.children.length);
+
   return house;
 }
